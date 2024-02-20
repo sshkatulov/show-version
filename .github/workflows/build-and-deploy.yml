@@ -27,7 +27,8 @@ jobs:
         run: echo "REACT_APP_VERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       - name: Print version
-        run: echo "Version: $REACT_APP_VERSION"
+        run: |
+          echo "Version: $REACT_APP_VERSION"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
