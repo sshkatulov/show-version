@@ -53,7 +53,7 @@ jobs:
 
       - name: Set version
         run: |
-          echo "REACT_APP_VERSION=$(echo ${{ steps.create_tag.outputs.new_tag }}" >> $GITHUB_ENV
+          echo "REACT_APP_VERSION=$(`echo ${{ steps.create_tag.outputs.new_tag }}`" >> $GITHUB_ENV
           echo "Version: $REACT_APP_VERSION"
 
       - name: Build
