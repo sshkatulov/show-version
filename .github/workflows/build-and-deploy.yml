@@ -29,10 +29,9 @@ jobs:
       - name: Create New Tag
         id: create_tag
         run: |
-          echo "REACT_APP_VERSION=$(echo ${{ steps.get_tag.outputs.latest_tag }} | awk -F. '{print $1"."$2"."$3 + 1}')" >> $GITHUB_ENV
-          # version=$(echo ${{ steps.get_tag.outputs.latest_tag }} | awk -F. '{print $1"."$2"."$3 + 1}')
-          git tag $REACT_APP_VERSION
-          echo "::set-output name=new_tag::$REACT_APP_VERSION"
+          version=$(echo ${{ steps.get_tag.outputs.latest_tag }} | awk -F. '{print $1"."$2"."$3 + 1}')
+          git tag $version
+          echo "::set-output name=new_tag::$version"
 
       - name: Push Tag to Repository
         run: git push origin ${{ steps.create_tag.outputs.new_tag }}
@@ -51,6 +50,11 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Set version
+        run: |
+          echo "REACT_APP_VERSION=$(echo ${{ steps.create_tag.outputs.new_tag }}" >> $GITHUB_ENV
+          echo "Version: $REACT_APP_VERSION"
 
       - name: Build
         run: npm run build
