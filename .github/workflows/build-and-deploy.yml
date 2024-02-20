@@ -1,69 +1,85 @@
+# Name of the GitHub Actions workflow
 name: CI
 
+# Trigger the workflow on push events to the "main" branch
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
 
+# Define permissions for the workflow
 permissions:
   contents: write
   pages: write
   id-token: write
 
+# Define jobs in the workflow
 jobs:
+  # Job for building and tagging a new version
   tag-build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      # Step 1: Checkout the repository code
+      - name: Checkout repository
         uses: actions/checkout@v2
+        # Ensures that the entire history is available, which is necessary for determining the latest tag
         with:
           fetch-depth: 0
 
-      # - name: Set up Git
-      #   run: |
-      #     git config --global user.email "actions@github.com"
-      #     git config --global user.name "GitHub Actions"
-
-      - name: Get Latest Tag
+      # Step 2: Get the latest tag from the repository
+      - name: Get latest tag
+        # The id will be needed on the later steps to get the output values
         id: get_tag
+        # Getting the latest tag and setting the output value
         run: |
           latest_tag=$(git describe --tags --abbrev=0)
           echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
 
-      - name: Create New Tag
+      # Step 3: Create a new tag for the next version
+      - name: Create new tag
         id: create_tag
+        # Getting new version by incrementing the patch-version
         run: |
           version=$(echo ${{ steps.get_tag.outputs.latest_tag }} | awk -F. '{print $1"."$2"."$3 + 1}')
           git tag $version
           echo "new_tag=$version" >> $GITHUB_OUTPUT
 
-      - name: Push Tag to Repository
+      # Step 4: Push the new tag to the repository
+      - name: Push tag to repository
         run: git push origin ${{ steps.create_tag.outputs.new_tag }}
 
+      # Step 5: Install Node.js for the build process
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
+      # Step 6: Install project dependencies using npm
       - name: Install dependencies
         run: npm install
 
+      # Step 7: Set the version in the environment variable
       - name: Set version
         run: |
           echo "REACT_APP_VERSION=$(echo ${{ steps.create_tag.outputs.new_tag }})" >> $GITHUB_ENV
 
+      # Step 8: Build the project using npm
       - name: Build
         run: npm run build
 
+      # Step 9: Upload the build artifact to GitHub Pages
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
           path: ./build
-  
+
+  # Job for deploying to GitHub Pages after successful build
   deploy:
     environment:
       name: github-pages
     runs-on: ubuntu-latest
+    # Indicates this job depends on the sucessful completion of the "tag-build" job
     needs: tag-build
     steps:
+      # Step 10: Deploy the built project to GitHub Pages
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v3
