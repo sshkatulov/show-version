@@ -28,7 +28,7 @@ jobs:
         run: |
           latest_tag=$(git describe --tags --abbrev=0)
           # echo "::set-output name=latest_tag::$latest_tag"
-          echo "latest_tag=latest_tag" >> $GITHUB_OUTPUT
+          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
 
       - name: Create New Tag
         id: create_tag
@@ -36,7 +36,7 @@ jobs:
           version=$(echo ${{ steps.get_tag.outputs.latest_tag }} | awk -F. '{print $1"."$2"."$3 + 1}')
           git tag $version
           # echo "::set-output name=new_tag::$version"
-          echo "new_tag=version" >> $GITHUB_OUTPUT
+          echo "new_tag=$version" >> $GITHUB_OUTPUT
 
       - name: Push Tag to Repository
         run: git push origin ${{ steps.create_tag.outputs.new_tag }}
