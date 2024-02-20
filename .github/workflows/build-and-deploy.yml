@@ -28,6 +28,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Push git tags
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git tag -a $REACT_APP_VERSION -m "Automatically created by GitHub Actions"
+          git push --tags
+
       - name: Set version
         run: echo "REACT_APP_VERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
